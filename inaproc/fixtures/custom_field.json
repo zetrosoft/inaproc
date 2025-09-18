@@ -1,0 +1,13 @@
+[
+    {
+        "doctype": "Custom Field",
+        "dt": "Item Group",
+        "fieldname": "akronim",
+        "fieldtype": "Data",
+        "label": "Akronim",
+        "insert_after": "item_group_name",
+        "no_copy": 1,
+        "module": "Inaproc",
+        "name": "Item Group-akronim"
+    }
+]

@@ -1,0 +1,52 @@
+{
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:department",
+ "creation": "2025-09-17 10:00:00.000000",
+ "doctype": "Item Group Access",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "fields": [
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "reqd": 1
+  }
+ ],
+ "idx": 0,
+ "issingle": 0,
+ "modified": "2025-09-17 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Inaproc",
+ "name": "Item Group Access",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "department",
+ "track_changes": 1
+}

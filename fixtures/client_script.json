@@ -1,0 +1,42 @@
+frappe.ui.form.on('Stock Reconciliation', {
+    onload: function(frm) {
+        frm.add_custom_button(__('Download Stock Template'), function() {
+            let warehouse = frm.doc.warehouse;
+
+            if (!warehouse) {
+                frappe.msgprint(__('Mohon pilih Gudang terlebih dahulu.'));
+                return;
+            }
+
+            frappe.call({
+                method: 'inaproc.stock_opname_utils.get_stock_reconciliation_template_data',
+                args: {
+                    warehouse: warehouse
+                },
+                callback: function(r) {
+                    if (r.message) {
+                        let data = r.message;
+                        let filename = `Stock_Reconciliation_Template_${warehouse}.csv`;
+                        
+                        // Convert array of arrays to CSV string
+                        let csv_string = data.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+                        // Trigger download
+                        const blob = new Blob([csv_string], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        if (link.download !== undefined) { // feature detection
+                            const url = URL.createObjectURL(blob);
+                            link.setAttribute('href', url);
+                            link.setAttribute('download', filename);
+                            link.style.visibility = 'hidden';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        }
+                        frappe.msgprint(__('Template stok berhasil diunduh.'));
+                    }
+                }
+            });
+        }, 'Download'); // 'Download' is the group for the button
+    }
+});

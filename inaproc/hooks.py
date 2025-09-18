@@ -5,6 +5,8 @@ app_description = "Custom inventory management"
 app_email = "support@bijaktechnology.com"
 app_license = "mit"
 
+fixtures = ["Client Script", "Custom Item Hierarchy"]
+
 # Apps
 # ------------------
 
@@ -117,21 +119,17 @@ app_license = "mit"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+ 	"Item": "inaproc.permissions.get_item_access_conditions",
+}
 
 # DocType Class
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Item": "inaproc.overrides.item.CustomItem"
+}
 
 # Document Events
 # ---------------

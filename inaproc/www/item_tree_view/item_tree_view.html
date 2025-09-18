@@ -1,0 +1,26 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block script %}
+<script>
+    // Pass data from Python context to JavaScript
+    var item_groups_data = {{ item_groups | json }};
+    var items_data = {{ items | json }};
+</script>
+<script src="/assets/inaproc/js/item_tree_view.js"></script>
+{% endblock %}
+
+{% block page_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <h1>{{ title }}</h1>
+            <div id="item-tree-container">
+                <!-- Tree will be rendered here by JavaScript -->
+                Loading tree...
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
