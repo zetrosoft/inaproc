@@ -8,10 +8,9 @@ def get_item_access_conditions(user):
     # Dapatkan Employee DocType untuk pengguna yang sedang login
     employee = frappe.db.get_value("Employee", {"user_id": user}, ["department"], as_dict=True)
 
-    if not employee or not employee.department:
-        # Jika pengguna bukan karyawan atau tidak memiliki departemen,
-        # kembalikan kondisi yang tidak mengizinkan akses ke item apa pun
-        return {"name": "IS NULL"}
+    # Jika pengguna bukan karyawan atau tidak memiliki departemen,
+    # kembalikan kondisi yang tidak mengizinkan akses ke item apa pun
+    return "`tabItem`.`name` IS NULL"
 
     # Dapatkan daftar Item Group yang diizinkan untuk departemen ini
     allowed_item_groups = frappe.get_list(
@@ -29,8 +28,10 @@ def get_item_access_conditions(user):
     item_group_names = [d.item_group for d in allowed_item_groups]
 
     # Kembalikan kondisi untuk memfilter Item berdasarkan Item Group yang diizinkan
-    return {
-        "Item": {
-            "item_group": ["in", item_group_names]
-        }
-    }
+    if item_group_names:
+        # Pastikan nama grup di-escape dengan benar untuk SQL
+        escaped_item_group_names = [frappe.db.escape(name) for name in item_group_names]
+        return "`tabItem`.`item_group` IN ({})".format(", ".join(escaped_item_group_names))
+    else:
+        # Jika tidak ada item group yang diizinkan, kembalikan kondisi yang selalu salah
+        return "`tabItem`.`name` IS NULL"
