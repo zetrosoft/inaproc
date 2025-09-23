@@ -1,2 +1,2 @@
 Inaproc
-inventory
+Inventory

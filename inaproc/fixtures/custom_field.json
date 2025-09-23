@@ -1,13 +1,12 @@
-[
-    {
-        "doctype": "Custom Field",
-        "dt": "Item Group",
-        "fieldname": "akronim",
-        "fieldtype": "Data",
-        "label": "Akronim",
-        "insert_after": "item_group_name",
-        "no_copy": 1,
-        "module": "Inaproc",
-        "name": "Item Group-akronim"
-    }
-]
+{
+    "doctype": "Custom Field",
+    "name": "Payment Schedule-custom_is_active",
+    "parent": "Payment Schedule",
+    "dt": "Payment Schedule",
+    "parentfield": "payment_schedule",
+    "fieldname": "custom_is_active",
+    "label": "Is Active Term",
+    "fieldtype": "Check",
+    "default": "0",
+    "in_list_view": 1
+}
