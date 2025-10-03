@@ -1,12 +1,55 @@
-{
-    "doctype": "Custom Field",
-    "name": "Payment Schedule-custom_is_active",
-    "parent": "Payment Schedule",
-    "dt": "Payment Schedule",
-    "parentfield": "payment_schedule",
-    "fieldname": "custom_is_active",
-    "label": "Is Active Term",
-    "fieldtype": "Check",
-    "default": "0",
-    "in_list_view": 1
-}
+[
+    {
+        "doctype": "Custom Field",
+        "name": "Item-custom_inventory_section",
+        "dt": "Item",
+        "fieldname": "custom_inventory_section",
+        "fieldtype": "Section Break",
+        "insert_after": "auto_reorder_section",
+        "label": "Custom Inventory Planning"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Item-custom_calculated_min_qty",
+        "dt": "Item",
+        "fieldname": "custom_calculated_min_qty",
+        "fieldtype": "Float",
+        "insert_after": "custom_inventory_section",
+        "label": "Calculated Min Qty",
+        "no_copy": 1,
+        "read_only": 1,
+        "description": "Minimum quantity calculated based on sales history or demand."
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Item-custom_calculated_max_qty",
+        "dt": "Item",
+        "fieldname": "custom_calculated_max_qty",
+        "fieldtype": "Float",
+        "insert_after": "custom_calculated_min_qty",
+        "label": "Calculated Max Qty",
+        "no_copy": 1,
+        "read_only": 1,
+        "description": "Maximum quantity calculated based on sales history or demand."
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Item-custom_safety_stock",
+        "dt": "Item",
+        "fieldname": "custom_safety_stock",
+        "fieldtype": "Float",
+        "insert_after": "custom_calculated_max_qty",
+        "label": "Safety Stock",
+        "description": "Buffer stock to prevent stockouts."
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Item-custom_lead_time",
+        "dt": "Item",
+        "fieldname": "custom_lead_time",
+        "fieldtype": "Int",
+        "insert_after": "custom_safety_stock",
+        "label": "Lead Time (Days)",
+        "description": "Time in days between placing an order and receiving it."
+    }
+]

@@ -5,7 +5,14 @@ app_description = "Custom inventory management"
 app_email = "support@bijaktechnology.com"
 app_license = "mit"
 
-fixtures = ["Client Script", "Custom Item Hierarchy"]
+fixtures = ["Custom Field"]
+
+scheduler_events = {
+    "daily": [
+        "inaproc.scheduled_jobs.calculate_min_max_qty.calculate_min_max_quantities",
+        "inaproc.scheduled_jobs.create_material_request.create_material_requests_and_notify"
+    ]
+}
 
 # ... (other hooks from original file) ...
 

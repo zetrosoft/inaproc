@@ -1,0 +1,9 @@
+{
+ "doctype": "Report",
+ "name": "Reorder Level Monitoring",
+ "report_name": "Reorder Level Monitoring",
+ "report_type": "Script Report",
+ "is_standard": "No",
+ "module": "Inaproc",
+ "ref_doctype": "Item"
+}
