@@ -1,0 +1,310 @@
+
+<div class="print-format-container">
+    <style>
+        @page {
+            size: 210mm 297mm; /* A4 */
+            margin: 10mm 05mm 5mm 15mm; /* top right bottom left */
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 10px; /* Adjusted font size */
+            color: #333;
+        }
+        .header-table {
+            width: 100%;
+            border-collapse:collapse;
+            margin-bottom: 10px;
+        }
+        .company-info-cell {
+            width: 70%; /* Adjust as needed */
+            vertical-align: top;
+            text-align: left;
+        }
+        .qr-code-cell {
+            width: 30%; /* Adjust as needed */
+            vertical-align: top;
+            text-align: right;
+        }
+        .print-format-container {
+            width: 100%;
+            margin: auto;
+            padding: 0; /* Margins handled by @page */
+        }
+
+        .company-details {
+            flex-grow: 1;
+            text-align: left;
+        }
+        .company-details h2 {
+            margin: 0;
+            font-size: 16px; /* Adjusted font size */
+            font-weight: bold;
+        }
+        .company-details p {
+            margin: 0;
+            font-size: 12px; /* Consistent font size */
+        }
+        .logo {
+            /*width: 60%!important;  Adjusted size for better visibility */
+            height: auto;
+            margin-right: 10px;
+        }
+        .po-title {
+            text-align: center;
+            font-size: 16px; /* Adjusted font size */
+            font-weight: bold;
+            margin-bottom: 10px; /* Adjusted margin */
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+        .po-info-section {
+            font-size: 10px; /* Consistent font size */
+            margin-bottom:5px;
+        }
+        .po-info-section table {
+            width: 100%; /* Adjust width as needed */
+            border-collapse: collapse;
+            border:0px solid !important;
+        }
+    
+        .recipient-section {
+            margin-bottom: 10px; /* Adjusted margin */
+            font-size: 10px; /* Consistent font size */
+        }
+        .recipient-section h4 {
+            font-size: 10px; /* Adjusted font size */
+            font-weight: bold;
+        }
+        .item-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px; /* Adjusted margin */
+        }
+        .item-table th, .item-table td {
+            border: 1px solid #333;
+            padding: 4px; /* Adjusted padding */
+            text-align: left;
+            font-size: 10px!important; /* Consistent font size */
+        }
+        .item-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+        }
+        .item-table td.qty, .item-table td.rate, .item-table td.discount, .item-table td.total {
+            text-align: right;
+        }
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px; /* Adjusted margin */
+            font-size: 10px; /* Consistent font size */
+        }
+        .totals-section table {
+            width: 40%; /* Adjust width as needed */
+            border-collapse: collapse;
+        }
+        .totals-section th, .totals-section td {
+            padding: 1px 5px; /* Adjusted padding */
+            text-align: right;
+        }
+        .totals-section th {
+            text-align: left;
+            font-weight: normal;
+        }
+        .totals-section tr:last-child td, .totals-section tr:last-child th {
+            font-weight: bold;
+            border-top: 1px solid #333;
+        }
+        .signature-section {
+            /*display: flex;*/
+            justify-content: space-between;
+            margin-top: 30px; /* Adjusted margin */
+            font-size: 10px; /* Consistent font size */
+        }
+        .signature-block {
+            width: 100%;
+            text-align: center;
+        }
+        .signature-line {
+            border-bottom: 1px dotted #333;
+            margin-top: 40px; /* Space for signature */
+            margin-bottom: 5px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .flex-container {
+            display: flex;
+            align-items: center;
+        }
+        .qr-code {
+            margin-left: auto; /* Pushes QR to the right */
+            text-align: right;
+        }
+        .qr-code img {
+            width: 80px; /* Size of QR code */
+            height: auto;
+        }
+        .garis-atas{
+            border-top:0px !important ;
+        }
+        .garis-kanan{
+            border-right: 0px !important;
+        }
+        .garis-bawah{
+            border-bottom: 0px !important;
+        }
+    </style>
+
+    <table class="header-table">
+        <tr >
+            <td style="width: 12%; vertical-align: top; ">
+                {% set logo_path =  "/files/logo-siumang@0.33x.png" %}
+                <img class="logo" src="{{logo_path }}" alt="Logo">
+            </td>
+            <td class="company-info-cell" style="border: 2px;">
+                <div class="company-details">
+                    <h2>{{ doc.company or '' }}</h2>
+                    {% if doc.custom_company_address %}
+                    <p>{{ doc.custom_company_address.address_line1 or '' }}{% if doc.custom_company_address.address_line2 %}, {{ doc.custom_company_address.address_line2 }}{% endif %}</p>
+                    <p>{{ doc.custom_company_address.city or '' }}{% if doc.custom_company_address.state %}, {{ doc.custom_company_address.state }}{% endif %} </p>
+                    <p>{{ doc.custom_company_address.country or '' }} {{ doc.custom_company_address.pincode or '' }}</p>
+                    {% endif %}
+                </div>
+            </td>            <td class="qr-code-cell" style="width:15%">
+                {{ doc.custom_qr_code }}
+                
+            </td>
+        </tr>
+    </table>
+    <!-- end of header--><hr>
+    <table class="po-info-section" style="width: 100% !important;">
+        <tr>
+            <td style="width:40%; border-bottom:1px solid; font-size:medium">Kepada :</td>
+            <td style="width:20%">&nbsp;</td>
+            <td colspan='2' style="width:40%; border-bottom:1px solid; font-size:medium">Pesanan Pembelian</td>
+        </tr>
+        <tr>
+            {% set alamat="Jalan Raya Kebon Jeruk No. 123, RT 001/RW 002, Kelurahan Kebon Jeruk, Kecamatan Kebon Jeruk, Kota Jakarta Barat, Provinsi DKI Jakarta, Kode Pos 11530, Indonesia." %}
+            <td rowspan="4">
+                <span style="font-size: medium;">{{doc.supplier_name}}</span>
+                <p>{{ doc.custom_supplier_address.formatted_address or 'Alamat Pemasok tidak diatur.' }}</p>
+            </td>
+            <td>&nbsp;</td>
+            <td style="width:15%">Nomor</td>
+            <td style="width:35%">:<b> {{doc.name}}</b></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td>Tanggal</td>
+            <td>: {{ frappe.format(doc.transaction_date, "dd-MM-yyyy") }}</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td>Tanggal Kirim</td>
+            <td>: {{ frappe.format(doc.required_by, "dd-MMM-yyyy") or '' }}</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+        </tr>
+    </table>
+    <!--item PO-->
+    <table class="item-table">
+        <thead>
+            <tr>
+                <th style="width: 12%;">Kode Barang</th>
+                <th style="width: 38%;">Nama Barang</th>
+                <th style="width: 10%;">Kts.</th>
+                <th style="width: 15%;">@Harga</th>
+                <th style="width: 10%;">Diskon</th>
+                <th style="width: 15%;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in doc.items %}
+            <tr>
+                <td>{{ item.item_code }}</td>
+                <td>
+                    {{ item.item_name }}
+                    {% if item.description %}
+                    <br><small>{{ item.description }}</small>
+                    {% endif %}
+                </td>
+                <td class="qty">{{ item.qty }} {{ item.uom }}</td>
+                <td class="rate">{{ frappe.format(item.rate, "Currency") }}</td>
+                <td class="discount">{{ item.discount_percentage or 0 }}%</td>
+                <td class="total">{{ frappe.format(item.amount, "Currency") }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="6">
+                    <b>Keterangan:</b>
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2" class="text-right" style="border-right: 0px;">
+                    {{ doc.notes or ("PR " + (doc.items[0].item_name if doc.items else '')) }}
+                </td>
+                <td style="border: 0px !important; border-bottom:1px solid !important">&nbsp;</td>
+                <td colspan="3" style="padding: 0px!important;border-left:0px !important">
+                    <table style="width: 100%; margin:0px;">
+                        <tr>
+                            <th class="garis-atas" style="width:40%; text-align:left">Sub Total</th>
+                            <td class="garis-kanan garis-atas" style="width: 60%; text-align:right;">{{ frappe.format(doc.total, "Currency") }}</td>
+                        </tr>
+                        <tr>
+                            <th style="text-align: left;">Diskon</th>
+                            <td class="garis-kanan" style="text-align: right;">{{ frappe.format(doc.discount_amount or 0, "Currency") }}</td>
+                        </tr>
+                        {% for tax in doc.taxes %}
+                        <tr>
+                            <th style="text-align: left;">{{ tax.description }} ({{ tax.rate }}%)</th>
+                            <td class="garis-kanan" style="text-align: right;">{{ frappe.format(tax.tax_amount, "Currency") }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <th style="text-align: left;">Biaya Lain-lain</th>
+                            <td class="garis-kanan" style="text-align: right;">{{ frappe.format(doc.other_charges_amount or 0, "Currency") }}</td>
+                        </tr>
+                        <tr style="font-weight: bold;">
+                            <th class="garis-bawah" style="text-align: left;">Total</th>
+                            <td class="garis-kanan garis-bawah" style="text-align: right;">{{ frappe.format(doc.grand_total, "Currency") }}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    <!--signatur block-->
+    <table class="signature-section" style="border: 0px !important; width:100% !important">
+        <tr>
+            <td style="width:33%; text-align: center; border: 0px !important;">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <p>Manager Keuangan</p>
+                </div>
+            </td>
+            <td style="width:33%; text-align: center; border: 0px !important;">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <p>Direksi</p>
+                </div>
+            </td>
+            <td style="width:33%; text-align: center; border: 0px !important;">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <p>Bagian Pembelian</p>
+                    <p>Tgl. {{ frappe.format(frappe.utils.today(), "dd/MM") }}</p>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>

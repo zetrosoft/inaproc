@@ -1,0 +1,14 @@
+[
+    {
+        "doctype": "Print Format",
+        "name": "Form PO Inaproc",
+        "doc_type": "Purchase Order",
+        "module": "Inaproc",
+        "format_type": "Jinja",
+        "default_print_format": 0,
+        "raw_data": 0,
+        "custom_format": 1,
+        "standard": "Yes",
+        "html": "<!-- form_po_inaproc.html -->"
+    }
+]

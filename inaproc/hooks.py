@@ -5,7 +5,7 @@ app_description = "Custom inventory management"
 app_email = "support@bijaktechnology.com"
 app_license = "mit"
 
-fixtures = ["Custom Field"]
+fixtures = ["Custom Field", "Print Format"]
 
 scheduler_events = {
     "daily": [
@@ -15,6 +15,21 @@ scheduler_events = {
 }
 
 # ... (other hooks from original file) ...
+
+doc_events = {
+    "Purchase Order": {
+        "before_print": [
+            "inaproc.utils.add_qr_to_context",
+            "inaproc.utils.add_all_linked_addresses_to_context"
+        ]
+    },
+    "Sales Order": {
+        "before_print": "inaproc.utils.add_all_linked_addresses_to_context"
+    },
+    "Delivery Note": {
+        "before_print": "inaproc.utils.add_all_linked_addresses_to_context"
+    }
+}
 
 permission_query_conditions = {
  	"Item": "inaproc.permissions.get_item_access_conditions",
