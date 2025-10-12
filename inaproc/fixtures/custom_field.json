@@ -51,5 +51,37 @@
         "insert_after": "custom_safety_stock",
         "label": "Lead Time (Days)",
         "description": "Time in days between placing an order and receiving it."
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Purchase Order-custom_po_support_docs_section",
+        "dt": "Purchase Order",
+        "fieldname": "custom_po_support_docs_section",
+        "fieldtype": "Section Break",
+        "label": "Dokumen Pendukung",
+        "insert_after": "payment_schedule",
+        "collapsible": 1,
+        "module": "inaproc"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Purchase Order-custom_upload_support_doc",
+        "dt": "Purchase Order",
+        "fieldname": "custom_upload_support_doc",
+        "fieldtype": "Button",
+        "label": "Unggah Dokumen",
+        "insert_after": "custom_po_support_docs_section",
+        "module": "inaproc"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Purchase Order-custom_po_support_docs_table",
+        "dt": "Purchase Order",
+        "fieldname": "custom_po_support_docs_table",
+        "fieldtype": "Table",
+        "label": "Dokumen Pendukung",
+        "options": "PO Support Document",
+        "insert_after": "custom_upload_support_doc",
+        "module": "inaproc"
     }
 ]

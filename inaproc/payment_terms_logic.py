@@ -35,6 +35,10 @@ def custom_make_purchase_invoice(source_name, target_doc=None, args=None):
                 new_term.invoice_portion = term.invoice_portion
                 new_term.payment_amount = term.payment_amount
                 new_term.custom_is_active = term.get("custom_is_active", 0)
+                new_term.invoice_basis = term.get("invoice_basis")
+                new_term.status_invoice = term.get("status_invoice")
+                new_term.invoice_reference = term.get("invoice_reference")
+                new_term.related_delivery_id = term.get("related_delivery_id")
 
         frappe.log_error("Payment schedule copied. Attempting to return modified PI.")
 

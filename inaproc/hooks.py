@@ -16,6 +16,10 @@ scheduler_events = {
 
 # ... (other hooks from original file) ...
 
+doctype_js = {
+    "Purchase Order": "public/js/purchase_order.js"
+}
+
 doc_events = {
     "Purchase Order": {
         "before_print": [
