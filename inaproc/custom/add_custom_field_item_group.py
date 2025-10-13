@@ -24,6 +24,7 @@ def add_custom_field():
                 "fieldtype": "Data",
                 "insert_after": "item_group_name", # Posisi field di form
                 "no_copy": 1,
+                "in_list_view": 1,
             }
         )
         print(f"Berhasil menambahkan Custom Field ''{field_name}'' ke Doctype ''{doctype_name}''.")
