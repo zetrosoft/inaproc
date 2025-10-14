@@ -83,5 +83,16 @@
         "options": "PO Support Document",
         "insert_after": "custom_upload_support_doc",
         "module": "inaproc"
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Item Group-akronim",
+        "dt": "Item Group",
+        "fieldname": "akronim",
+        "fieldtype": "Data",
+        "insert_after": "item_group_name",
+        "label": "Akronim",
+        "no_copy": 1,
+        "in_list_view": 1
     }
 ]
