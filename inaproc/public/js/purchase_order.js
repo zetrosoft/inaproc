@@ -1,7 +1,7 @@
 frappe.ui.form.on('Purchase Order', {
     refresh: function(frm) {
         // --- Logic to show/hide Print button ---
-        if (frm.doc.status === 'Approved') {
+        if (frm.doc.docstatus === 1) { // Only show print button if PO is Submitted (docstatus 1)
             frm.add_custom_button(__('Print'), function() {
                 frm.print_doc();
             }, __('Print'));
