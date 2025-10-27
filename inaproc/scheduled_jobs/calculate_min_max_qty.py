@@ -50,7 +50,7 @@ def calculate_min_max_quantities():
 
     # 1. Get all relevant finished goods (items that are sold and have a BOM).
     finished_goods = frappe.get_list("Item", 
-        filters={"custom_inventory_section": 1, "has_bom": 1}, 
+        filters={"is_stock_item": 1, "default_bom": ["!=", ""]}, 
         fields=["name", "item_code"]
     )
 
@@ -91,9 +91,13 @@ def calculate_min_max_quantities():
             # Calculate average demand over the period (3 months).
             average_demand = total_demand / 3.0
 
-            # Apply formula to calculate min and max quantities.
-            calculated_min_qty = (average_demand * lead_time) + safety_stock
-            calculated_max_qty = calculated_min_qty * 2  # Simple example: max is twice the min.
+            if total_demand > 0:
+                calculated_min_qty = (average_demand * lead_time) + safety_stock
+                calculated_max_qty = calculated_min_qty * 2  # Simple example: max is twice the min.
+            else:
+                # Default values if no sales history
+                calculated_min_qty = 5  # Example default
+                calculated_max_qty = 10 # Example default
 
             # Update the Item document.
             item_doc.custom_calculated_min_qty = calculated_min_qty
@@ -105,4 +109,5 @@ def calculate_min_max_quantities():
 
 
     frappe.db.commit()
-    frappe.log_simple("Min/Max Quantities Calculated", f"Processed {len(item_demands)} items successfully.")
+    frappe.logger("inaproc").info(f"Min/Max Quantities Calculated: Processed {len(item_demands)} items successfully.")
+    frappe.msgprint(f"Min/Max Quantities Calculated: Processed {len(item_demands)} items successfully.")

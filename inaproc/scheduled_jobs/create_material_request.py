@@ -5,7 +5,7 @@ def create_material_requests_and_notify():
     today = getdate()
 
     # Dapatkan semua Item yang relevan
-    items = frappe.get_list("Item", filters={"custom_inventory_section": 1}, fields=["name", "item_code", "projected_qty", "custom_calculated_min_qty", "custom_calculated_max_qty"])
+    items = frappe.get_list("Item", filters={"is_stock_item": 1}, fields=["name", "item_code", "projected_qty", "custom_calculated_min_qty", "custom_calculated_max_qty"])
 
     for item in items:
         projected_qty = item.projected_qty or 0
@@ -29,7 +29,7 @@ def create_material_requests_and_notify():
                     material_request.insert()
                     material_request.submit()
                     frappe.db.commit()
-                    frappe.log_simple("Material Request Created", f"Material Request {material_request.name} created for {item.item_code} with qty {qty_to_request}")
+                    frappe.logger("inaproc").info(f"Material Request Created: Material Request {material_request.name} created for {item.item_code} with qty {qty_to_request}")
 
                     # 2. Kirim Notifikasi
                     send_reorder_notification(item, qty_to_request, material_request.name)
@@ -80,4 +80,4 @@ def send_reorder_notification(item, qty_to_request, material_request_name):
         now=True # Kirim segera
     )
 
-    frappe.log_simple("Re-order Notification Sent", f"Notification sent for {item.item_code} to {', '.join(recipients)}")
+    frappe.logger("inaproc").info(f"Re-order Notification Sent: Notification sent for {item.item_code} to {', '.join(recipients)}")

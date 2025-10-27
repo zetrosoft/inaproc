@@ -1,0 +1,13 @@
+[
+    {
+        "doctype": "Custom Field",
+        "name": "Item-custom_is_inventory_managed",
+        "dt": "Item",
+        "fieldname": "custom_is_inventory_managed",
+        "fieldtype": "Check",
+        "label": "Is Inventory Managed",
+        "default": "0",
+        "insert_after": "stock_uom",
+        "idx": 99
+    }
+]

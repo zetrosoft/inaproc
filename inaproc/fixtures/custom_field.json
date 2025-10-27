@@ -5,7 +5,7 @@
         "dt": "Item",
         "fieldname": "custom_inventory_section",
         "fieldtype": "Section Break",
-        "insert_after": "auto_reorder_section",
+        "insert_after": "safety_stock",
         "label": "Custom Inventory Planning"
     },
     {
