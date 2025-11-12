@@ -49,3 +49,5 @@ override_whitelisted_methods = {
     "erpnext.buying.doctype.purchase_order.purchase_order.make_purchase_invoice": 
     "inaproc.payment_terms_logic.custom_make_purchase_invoice"
 }
+
+esk_include = "assets/employee_portal/js/global_sound_enabler.js"

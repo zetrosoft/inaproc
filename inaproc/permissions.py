@@ -5,6 +5,10 @@ def get_item_access_conditions(user):
     if not user:
         return None
 
+    # Administrator dapat melihat semua item, abaikan batasan departemen
+    if user == "Administrator":
+        return None
+
     # Dapatkan Employee DocType untuk pengguna yang sedang login
     employee = frappe.db.get_value("Employee", {"user_id": user}, ["department"], as_dict=True)
 
