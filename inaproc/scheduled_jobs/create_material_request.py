@@ -3,9 +3,16 @@ from frappe.utils import getdate
 
 def create_material_requests_and_notify():
     today = getdate()
+    
+    # List to hold items that need to be requested
+    items_for_mr = []
 
-    # Dapatkan semua Item yang relevan
-    items = frappe.get_list("Item", filters={"is_stock_item": 1}, fields=["name", "item_code", "projected_qty", "custom_calculated_min_qty", "custom_calculated_max_qty"])
+    # Dapatkan semua Item yang relevan dan boleh dibeli
+    # Filter berdasarkan is_purchase_item = 1
+    items = frappe.get_list("Item", 
+        filters={"is_stock_item": 1, "is_purchase_item": 1, "has_variants": 0}, 
+        fields=["name", "item_code", "projected_qty", "custom_calculated_min_qty", "custom_calculated_max_qty"]
+    )
 
     for item in items:
         projected_qty = item.projected_qty or 0
@@ -16,68 +23,120 @@ def create_material_requests_and_notify():
             qty_to_request = calculated_max_qty - projected_qty
 
             if qty_to_request > 0:
-                # 1. Buat Material Request
-                material_request = frappe.new_doc("Material Request")
-                material_request.material_request_type = "Purchase"
-                material_request.schedule_date = today
-                material_request.append("items", {
+                # Tentukan target warehouse
+                target_warehouse = None
+                
+                # Query langsung ke DocType Item Default
+                item_default_entry = frappe.get_list("Item Default", 
+                    filters={"parent": item.item_code}, # Filter berdasarkan nama item saat ini
+                    fields=["default_warehouse"],
+                    limit=1,# Hanya perlu satu entri
+                    ignore_permissions=True
+                )
+                
+                
+                if item_default_entry and item_default_entry[0].default_warehouse:
+                    target_warehouse = item_default_entry[0].default_warehouse
+                
+                if not target_warehouse:
+                    target_warehouse = "Persediaan Bahan Baku - PSTS" # Default jika tidak ditemukan
+
+                items_for_mr.append({
                     "item_code": item.item_code,
                     "qty": qty_to_request,
-                    "warehouse": frappe.db.get_single_value("Stock Settings", "default_warehouse") # Ambil default warehouse
+                    "warehouse": target_warehouse
                 })
-                try:
-                    material_request.insert()
-                    material_request.submit()
-                    frappe.db.commit()
-                    frappe.logger("inaproc").info(f"Material Request Created: Material Request {material_request.name} created for {item.item_code} with qty {qty_to_request}")
+                print(f"{item.item_code} - {target_warehouse}")
+                
+    if items_for_mr:
+        # Buat satu Material Request untuk semua item yang terkumpul
+        material_request = frappe.new_doc("Material Request")
+        material_request.material_request_type = "Purchase"
+        material_request.request_type = "Gudang" # Sesuai permintaan user
+        material_request.schedule_date = today
+        
+        for mr_item_data in items_for_mr:
+            material_request.append("items", mr_item_data)
+        
+        try:
+            material_request.insert(ignore_permissions=True)
+            
+            # Tambahkan komentar bahwa dokumen ini dibuat otomatis
+            material_request.add_comment(
+                "Info",
+                "Dokumen ini dibuat secara otomatis oleh sistem karena stok mencapai level minimum untuk beberapa item."
+            )
+            
+            material_request.submit()
+            
+            frappe.logger("inaproc").info(f"Material Request Created: Material Request {material_request.name} created for {len(items_for_mr)} items.")
 
-                    # 2. Kirim Notifikasi
-                    send_reorder_notification(item, qty_to_request, material_request.name)
+            # Kirim Notifikasi
+            send_reorder_notification(items_for_mr, material_request.name)
 
-                except Exception as e:
-                    frappe.log_error(f"Error creating Material Request for {item.item_code}: {e}", "Material Request Creation Error")
+        except Exception as e:
+            frappe.log_error(f"Error creating Material Request for multiple items: {e}", "Material Request Creation Error")
 
-def send_reorder_notification(item, qty_to_request, material_request_name):
-    # Dapatkan Manajer Departemen Item
-    department_manager_emails = []
-    item_department = frappe.db.get_value("Item", item.name, "department") # Asumsi ada field department di Item
-    if item_department:
-        department_manager = frappe.get_list("Employee", filters={"department": item_department, "designation": "Department Manager"}, fields=["user_id"])
-        for dm in department_manager:
-            if dm.user_id: department_manager_emails.append(frappe.db.get_value("User", dm.user_id, "email"))
+def send_reorder_notification(items_for_mr, material_request_name): # Changed signature
+    # Definisikan peran yang akan menerima notifikasi
+    target_roles = [
+        "Purchase Manager", "Purchase User", 
+        "Stock Manager", "Stock User",
+        "Production Manager", "Production User"
+    ]
 
-    # Dapatkan Pengguna dengan peran Purchasing User dan Purchasing Manager
-    purchasing_user_emails = frappe.get_list("User", filters={"roles": ["like", "%Purchasing User%"]}, fields=["email"])
-    purchasing_manager_emails = frappe.get_list("User", filters={"roles": ["like", "%Purchasing Manager%"]}, fields=["email"])
+    # Dapatkan semua user yang memiliki salah satu dari peran tersebut
+    users_with_role = frappe.get_all("Has Role", 
+        filters={"role": ["in", target_roles], "parenttype": "User"},
+        fields=["parent"],
+        distinct=True
+    )
+    
+    user_names = [d.parent for d in users_with_role]
 
-    recipients = list(set(department_manager_emails + [u.email for u in purchasing_user_emails] + [u.email for u in purchasing_manager_emails]))
-    recipients = [r for r in recipients if r] # Filter out None or empty emails
+    if not user_names:
+        frappe.logger("inaproc").warning(f"No users found for roles {target_roles} to send notification for Material Request {material_request_name}.")
+        return
 
-    if not recipients: return # Tidak ada penerima, jangan kirim notifikasi
+    # Dapatkan email dari user tersebut
+    recipients_docs = frappe.get_all("User", filters={"name": ["in", user_names], "enabled": 1}, fields=["email"])
+    recipients = [d.email for d in recipients_docs if d.email] # Corrected list comprehension
 
-    subject = f"Re-order Alert: Material Request for {item.item_code}"
-    message = f"Halo,\n\nSistem telah membuat Permintaan Material baru untuk item {item.item_code} karena stok di bawah batas minimum.\n\nDetail Permintaan:\nItem Code: {item.item_code}\nJumlah Diminta: {qty_to_request}\nMaterial Request ID: {material_request_name}\n\nSilakan tinjau Permintaan Material ini: {frappe.utils.get_url(f'/app/material-request/{material_request_name}')}\n\nTerima kasih."
+    if not recipients:
+        frappe.logger("inaproc").warning(f"Found users but no valid emails for roles {target_roles} to send notification for Material Request {material_request_name}.")
+        return
+
+    # Buat daftar item untuk pesan notifikasi
+    item_list_html = "<ul>"
+    for item_data in items_for_mr:
+        item_list_html += f"<li>{item_data['item_code']} (Qty: {item_data['qty']})</li>"
+    item_list_html += "</ul>"
+
+    subject = f"[Otomatis] Permintaan Material Baru: {material_request_name}"
+    message = (f"Ini adalah notifikasi otomatis.\n\n"
+               f"Sistem telah membuat Permintaan Material baru ({material_request_name}) karena stok beberapa item berada di bawah batas minimum.\n\n"
+               f"<b>Detail Item yang Diminta:</b>\n"
+               f"{item_list_html}\n"
+               f"Silakan tinjau Permintaan Material pada link berikut:\n"
+               f"<a href='{frappe.utils.get_url(f'/app/material-request/{material_request_name}')}'>Lihat Dokumen: {material_request_name}</a>\n\n"
+               f"Terima kasih.")
 
     # Kirim Notifikasi In-app
-    for recipient_email in recipients:
-        user_id = frappe.db.get_value("User", {"email": recipient_email}, "name")
-        if user_id:
-            frappe.send_notification(
-                recipients=[user_id],
-                subject=subject,
-                message=message,
-                doctype="Material Request",
-                name=material_request_name,
-                # email_content=message, # Untuk notifikasi email
-                # email_args={"attachments": []}
-            )
-
-    # Kirim Notifikasi Email
-    frappe.sendmail(
-        recipients=recipients,
+    frappe.send_notification(
+        recipients=user_names,
         subject=subject,
-        content=message,
-        now=True # Kirim segera
+        type="Alert",
+        doctype="Material Request",
+        docname=material_request_name,
+        message=message
     )
 
-    frappe.logger("inaproc").info(f"Re-order Notification Sent: Notification sent for {item.item_code} to {', '.join(recipients)}")
+    # Kirim Notifikasi Email (masih dikomentari sesuai permintaan sebelumnya)
+    # frappe.sendmail(
+    #     recipients=recipients,
+    #     subject=subject,
+    #     content=message,
+    #     now=True # Kirim segera
+    # )
+
+    frappe.logger("inaproc").info(f"Re-order Notification Sent: Notification sent for Material Request {material_request_name} to {', '.join(recipients)}")

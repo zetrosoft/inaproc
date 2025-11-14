@@ -42,72 +42,75 @@ def calculate_min_max_quantities():
     """
     Calculates and updates the minimum and maximum inventory quantities for items
     based on historical sales data and BOM explosion.
+    Sets default min/max for items without sales history.
     """
     today = getdate()
     three_months_ago = add_months(today, -3)
     
     item_demands = {}
 
-    # 1. Get all relevant finished goods (items that are sold and have a BOM).
-    finished_goods = frappe.get_list("Item", 
+    # 1. Calculate sales demand for finished goods and derived demand for raw materials.
+    #    This part populates item_demands only for items that had sales.
+    finished_goods_with_bom = frappe.get_list("Item", 
         filters={"is_stock_item": 1, "default_bom": ["!=", ""]}, 
         fields=["name", "item_code"]
     )
 
-    # 2. Calculate sales demand for finished goods and derived demand for raw materials.
-    for fg_item in finished_goods:
-        # Get total sales quantity for the finished good in the last 3 months.
+    for fg_item in finished_goods_with_bom:
         sales_qty = frappe.db.sql("""
-            SELECT SUM(qty)
-            FROM `tabSales Invoice Item`
-            WHERE item_code = %s
-              AND docstatus = 1
-              AND posting_date >= %s
+            SELECT SUM(t1.qty)
+            FROM `tabSales Invoice Item` t1
+            JOIN `tabSales Invoice` t2 ON t1.parent = t2.name
+            WHERE t1.item_code = %s
+              AND t2.docstatus = 1
+              AND t2.posting_date >= %s
         """, (fg_item.item_code, three_months_ago))[0][0] or 0
         
         total_sales_qty = flt(sales_qty)
 
         if total_sales_qty > 0:
-            # Add finished good demand to the dictionary.
             item_demands[fg_item.item_code] = item_demands.get(fg_item.item_code, 0) + total_sales_qty
-
-            # Explode BOM to find raw material requirements.
             required_materials = get_bom_material_for_production(fg_item.item_code, total_sales_qty)
-            
             for material, qty in required_materials.items():
                 item_demands[material] = item_demands.get(material, 0) + qty
 
-    # 3. Calculate and update min/max quantities for all items with calculated demand.
-    for item_code, total_demand in item_demands.items():
-        if total_demand <= 0:
-            continue
+    # 2. Get ALL stock items to ensure all are processed, even those without sales history.
+    all_stock_items = frappe.get_list("Item", 
+        filters={"is_stock_item": 1}, 
+        fields=["item_code", "custom_safety_stock", "custom_lead_time"]
+    )
+    
+    processed_item_count = 0
+    for item in all_stock_items:
+        item_code = item.item_code
+        total_demand = item_demands.get(item_code, 0) # Get demand if it exists, otherwise 0.
 
         try:
-            # Get item-specific details (safety stock, lead time).
-            item_doc = frappe.get_doc("Item", item_code)
-            safety_stock = flt(item_doc.get("custom_safety_stock", 0))
-            lead_time = flt(item_doc.get("custom_lead_time", 0))
+            safety_stock = flt(item.get("custom_safety_stock", 0))
+            lead_time = flt(item.get("custom_lead_time", 0))
 
-            # Calculate average demand over the period (3 months).
-            average_demand = total_demand / 3.0
+            calculated_min_qty = 0
+            calculated_max_qty = 0
 
             if total_demand > 0:
+                # Calculate based on demand
+                average_demand = total_demand / 3.0 # Average over 3 months
                 calculated_min_qty = (average_demand * lead_time) + safety_stock
-                calculated_max_qty = calculated_min_qty * 2  # Simple example: max is twice the min.
+                calculated_max_qty = calculated_min_qty * 2
             else:
-                # Default values if no sales history
-                calculated_min_qty = 5  # Example default
-                calculated_max_qty = 10 # Example default
+                # Default values if no sales history for this item
+                calculated_min_qty = 5
+                calculated_max_qty = 10
 
-            # Update the Item document.
-            item_doc.custom_calculated_min_qty = calculated_min_qty
-            item_doc.custom_calculated_max_qty = calculated_max_qty
-            item_doc.save(ignore_permissions=True)
-        except frappe.DoesNotExistError:
-            frappe.log_error(f"Item {item_code} not found, skipping min/max calculation.", "Min/Max Calculation")
+            # Update the Item document using frappe.db.set_value for efficiency.
+            frappe.db.set_value("Item", item_code, {
+                "custom_calculated_min_qty": calculated_min_qty,
+                "custom_calculated_max_qty": calculated_max_qty
+            }, update_modified=False) # Avoid updating 'modified' timestamp if not strictly necessary
+            processed_item_count += 1
+
+        except Exception as e:
+            frappe.log_error(f"Error processing item {item_code} for min/max calculation: {e}", "Min/Max Calculation")
             continue
 
-
-    frappe.db.commit()
-    frappe.logger("inaproc").info(f"Min/Max Quantities Calculated: Processed {len(item_demands)} items successfully.")
-    frappe.msgprint(f"Min/Max Quantities Calculated: Processed {len(item_demands)} items successfully.")
+    frappe.logger("inaproc").info(f"Min/Max Quantities Calculated: Processed {processed_item_count} items successfully.")
