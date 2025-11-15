@@ -23,6 +23,19 @@ def create_material_requests_and_notify():
             qty_to_request = calculated_max_qty - projected_qty
 
             if qty_to_request > 0:
+                # Pengecekan Eksplisit: Apakah sudah ada MR aktif untuk item ini?
+                # Ini untuk mencegah duplikasi jika projected_qty belum terupdate.
+                existing_mr_item = frappe.db.exists("Material Request Item", {
+                    "item_code": item.item_code,
+                    "docstatus": 1,  # 1 = Submitted
+                    "ordered_qty": ["<", 100] # Belum sepenuhnya di-order
+                })
+
+                if existing_mr_item:
+                    # Jika sudah ada, lewati item ini dan jangan buat MR baru.
+                    frappe.log_error(f"Skipping MR creation for {item.item_code}. Found existing active MR: {existing_mr_item}")
+                    continue
+
                 # Tentukan target warehouse
                 target_warehouse = None
                 
@@ -46,7 +59,7 @@ def create_material_requests_and_notify():
                     "qty": qty_to_request,
                     "warehouse": target_warehouse
                 })
-                print(f"{item.item_code} - {target_warehouse}")
+                print(f"{item.item_code} - {target_warehouse} - {existing_mr_item}")
                 
     if items_for_mr:
         # Buat satu Material Request untuk semua item yang terkumpul
@@ -69,7 +82,7 @@ def create_material_requests_and_notify():
             
             material_request.submit()
             
-            frappe.logger("inaproc").info(f"Material Request Created: Material Request {material_request.name} created for {len(items_for_mr)} items.")
+            frappe.log_error(f"Material Request Created: Material Request {material_request.name} created for {len(items_for_mr)} items.")
 
             # Kirim Notifikasi
             send_reorder_notification(items_for_mr, material_request.name)
@@ -95,15 +108,6 @@ def send_reorder_notification(items_for_mr, material_request_name): # Changed si
     user_names = [d.parent for d in users_with_role]
 
     if not user_names:
-        frappe.logger("inaproc").warning(f"No users found for roles {target_roles} to send notification for Material Request {material_request_name}.")
-        return
-
-    # Dapatkan email dari user tersebut
-    recipients_docs = frappe.get_all("User", filters={"name": ["in", user_names], "enabled": 1}, fields=["email"])
-    recipients = [d.email for d in recipients_docs if d.email] # Corrected list comprehension
-
-    if not recipients:
-        frappe.logger("inaproc").warning(f"Found users but no valid emails for roles {target_roles} to send notification for Material Request {material_request_name}.")
         return
 
     # Buat daftar item untuk pesan notifikasi
@@ -121,22 +125,27 @@ def send_reorder_notification(items_for_mr, material_request_name): # Changed si
                f"<a href='{frappe.utils.get_url(f'/app/material-request/{material_request_name}')}'>Lihat Dokumen: {material_request_name}</a>\n\n"
                f"Terima kasih.")
 
-    # Kirim Notifikasi In-app
-    frappe.send_notification(
-        recipients=user_names,
-        subject=subject,
-        type="Alert",
-        doctype="Material Request",
-        docname=material_request_name,
-        message=message
-    )
+    # Buat entri Notification Log untuk setiap user
+    # Ini akan memicu notifikasi lonceng dan push notification (jika aktif)
+    for user in user_names:
+        frappe.get_doc({
+            "doctype": "Notification Log",
+            "for_user": user,
+            "subject": subject,
+            "type": "Alert",
+            "document_type": "Material Request",
+            "document_name": material_request_name,
+            "email_content": message
+        }).insert(ignore_permissions=True)
+
 
     # Kirim Notifikasi Email (masih dikomentari sesuai permintaan sebelumnya)
-    # frappe.sendmail(
-    #     recipients=recipients,
-    #     subject=subject,
-    #     content=message,
-    #     now=True # Kirim segera
-    # )
-
-    frappe.logger("inaproc").info(f"Re-order Notification Sent: Notification sent for Material Request {material_request_name} to {', '.join(recipients)}")
+    # recipients_docs = frappe.get_all("User", filters={"name": ["in", user_names], "enabled": 1}, fields=["email"])
+    # recipients = [d.email for d in recipients_docs if d.email]
+    # if recipients:
+    #     frappe.sendmail(
+    #         recipients=recipients,
+    #         subject=subject,
+    #         content=message,
+    #         now=True # Kirim segera
+    #     )
