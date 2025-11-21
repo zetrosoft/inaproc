@@ -1,5 +1,6 @@
 import frappe
 
+
 def execute():
     # Ensure required roles exist
     roles_to_create = ["Purchase User", "Purchase Manager", "Purchase Master Manager"]

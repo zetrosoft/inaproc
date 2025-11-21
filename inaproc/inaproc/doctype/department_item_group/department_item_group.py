@@ -1,6 +1,7 @@
 import frappe
 from frappe.model.document import Document
 
+
 class DepartmentItemGroup(Document):
 	pass
 
@@ -17,7 +18,7 @@ def get_item_counts_for_item_groups(item_group_names):
         # Menggunakan frappe.db.sql untuk query langsung
         # Pastikan item_group_names di-escape dengan benar untuk mencegah SQL Injection
         escaped_item_group_names = [frappe.db.escape(name) for name in item_group_names]
-        
+
         # Query untuk mendapatkan jumlah item per item_group
         # Menggunakan GROUP BY untuk menghitung item di setiap grup
         result = frappe.db.sql(
@@ -29,8 +30,8 @@ def get_item_counts_for_item_groups(item_group_names):
             """.format(", ".join(escaped_item_group_names)),
             as_dict=True
         )
-        
+
         for row in result:
             item_counts[row.item_group] = row["COUNT(name)"]
-            
+
     return item_counts

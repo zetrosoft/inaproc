@@ -1,0 +1,44 @@
+[
+    {
+        "doctype": "Quality Inspection Parameter",
+        "name": "Kebersihan dan Kondisi Kemasan",
+        "parameter": "Kebersihan dan Kondisi Kemasan",
+        "description": "Memastikan kemasan (karung/plastik/box) bersih, tidak sobek, tidak basah, dan tersegel dengan baik."
+    },
+    {
+        "doctype": "Quality Inspection Parameter",
+        "name": "Label dan Tanggal Kadaluarsa",
+        "parameter": "Label dan Tanggal Kadaluarsa",
+        "description": "Memastikan label produk jelas, terbaca, dan tanggal kadaluarsa masih valid."
+    },
+    {
+        "doctype": "Quality Inspection Parameter",
+        "name": "Kondisi Fisik Produk (Bahan Baku)",
+        "parameter": "Kondisi Fisik Produk (Bahan Baku)",
+        "description": "Memastikan tidak ada bau aneh, warna tidak wajar, atau gumpalan pada bahan baku."
+    },
+    {
+        "doctype": "Quality Inspection Parameter",
+        "name": "Kualitas Kemasan Final",
+        "parameter": "Kualitas Kemasan Final",
+        "description": "Memastikan kemasan produk akhir (standing pouch/plastik) tersegel rapat, tidak bocor, dan kualitas cetakan baik."
+    },
+    {
+        "doctype": "Quality Inspection Parameter",
+        "name": "Uji Organoleptik (Barang Jadi)",
+        "parameter": "Uji Organoleptik (Barang Jadi)",
+        "description": "Mencicipi sampel produk untuk memastikan rasa, aroma, dan kerenyahan sesuai standar resep."
+    },
+    {
+        "doctype": "Quality Inspection Parameter",
+        "name": "Kesesuaian Berat Bersih",
+        "parameter": "Kesesuaian Berat Bersih",
+        "description": "Menimbang beberapa sampel produk untuk memastikan berat bersih sesuai dengan yang tertera di label."
+    },
+    {
+        "doctype": "Quality Inspection Parameter",
+        "name": "Pencetakan Label (Batch, Exp. Date)",
+        "parameter": "Pencetakan Label (Batch, Exp. Date)",
+        "description": "Memastikan nomor batch produksi dan tanggal kadaluarsa tercetak dengan jelas dan benar."
+    }
+]

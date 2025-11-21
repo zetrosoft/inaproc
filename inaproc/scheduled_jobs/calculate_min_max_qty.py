@@ -1,5 +1,6 @@
 import frappe
-from frappe.utils import getdate, add_months, flt
+from frappe.utils import add_months, flt, getdate
+
 
 def get_bom_material_for_production(bom_item_code, qty_to_produce=1.0, raw_materials=None):
     """
@@ -35,7 +36,7 @@ def get_bom_material_for_production(bom_item_code, qty_to_produce=1.0, raw_mater
         else:
             # It's a raw material, add it to the dictionary.
             raw_materials[item.item_code] = raw_materials.get(item.item_code, 0) + required_qty
-    
+
     return raw_materials
 
 def calculate_min_max_quantities():
@@ -46,13 +47,13 @@ def calculate_min_max_quantities():
     """
     today = getdate()
     three_months_ago = add_months(today, -3)
-    
+
     item_demands = {}
 
     # 1. Calculate sales demand for finished goods and derived demand for raw materials.
     #    This part populates item_demands only for items that had sales.
-    finished_goods_with_bom = frappe.get_list("Item", 
-        filters={"is_stock_item": 1, "default_bom": ["!=", ""]}, 
+    finished_goods_with_bom = frappe.get_list("Item",
+        filters={"is_stock_item": 1, "default_bom": ["!=", ""]},
         fields=["name", "item_code"]
     )
 
@@ -65,7 +66,7 @@ def calculate_min_max_quantities():
               AND t2.docstatus = 1
               AND t2.posting_date >= %s
         """, (fg_item.item_code, three_months_ago))[0][0] or 0
-        
+
         total_sales_qty = flt(sales_qty)
 
         if total_sales_qty > 0:
@@ -75,11 +76,11 @@ def calculate_min_max_quantities():
                 item_demands[material] = item_demands.get(material, 0) + qty
 
     # 2. Get ALL stock items to ensure all are processed, even those without sales history.
-    all_stock_items = frappe.get_list("Item", 
-        filters={"is_stock_item": 1}, 
+    all_stock_items = frappe.get_list("Item",
+        filters={"is_stock_item": 1},
         fields=["item_code", "custom_safety_stock", "custom_lead_time"]
     )
-    
+
     processed_item_count = 0
     for item in all_stock_items:
         item_code = item.item_code

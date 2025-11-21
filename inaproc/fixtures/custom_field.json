@@ -94,5 +94,35 @@
         "label": "Akronim",
         "no_copy": 1,
         "in_list_view": 1
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Purchase Receipt-custom_qc_validation_summary",
+        "dt": "Purchase Receipt",
+        "fieldname": "custom_qc_validation_summary",
+        "fieldtype": "HTML",
+        "label": "Ringkasan Validasi QC",
+        "insert_after": "scan_barcode",
+        "hidden": 1
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Stock Entry-custom_qc_validation_summary",
+        "dt": "Stock Entry",
+        "fieldname": "custom_qc_validation_summary",
+        "fieldtype": "HTML",
+        "label": "Ringkasan Validasi QC",
+        "insert_after": "per_received_qty",
+        "hidden": 1
+    },
+    {
+        "doctype": "Custom Field",
+        "name": "Delivery Note-custom_qc_validation_summary",
+        "dt": "Delivery Note",
+        "fieldname": "custom_qc_validation_summary",
+        "fieldtype": "HTML",
+        "label": "Ringkasan Validasi QC",
+        "insert_after": "per_delivered",
+        "hidden": 1
     }
 ]

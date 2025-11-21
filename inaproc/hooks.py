@@ -5,7 +5,7 @@ app_description = "Custom inventory management"
 app_email = "support@bijaktechnology.com"
 app_license = "mit"
 
-fixtures = ["Custom Field", "Print Format"]
+fixtures = ["Custom Field", "Print Format", "Quality Inspection Parameter", "Quality Inspection Template"]
 
 scheduler_events = {
     "daily": [
@@ -17,7 +17,10 @@ scheduler_events = {
 # ... (other hooks from original file) ...
 
 doctype_js = {
-    "Purchase Order": "public/js/purchase_order.js"
+    "Purchase Order": "public/js/purchase_order.js",
+    "Purchase Receipt": "public/js/purchase_receipt.js",
+    "Stock Entry": "public/js/stock_entry.js",
+    "Delivery Note": "public/js/delivery_note.js"
 }
 
 doc_events = {
@@ -46,7 +49,7 @@ override_doctype_class = {
 # Overriding Methods
 # ------------------------------
 override_whitelisted_methods = {
-    "erpnext.buying.doctype.purchase_order.purchase_order.make_purchase_invoice": 
+    "erpnext.buying.doctype.purchase_order.purchase_order.make_purchase_invoice":
     "inaproc.payment_terms_logic.custom_make_purchase_invoice"
 }
 

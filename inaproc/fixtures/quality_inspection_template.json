@@ -1,0 +1,64 @@
+[
+    {
+        "doctype": "Quality Inspection Template",
+        "name": "QC Bahan Baku Makanan",
+        "quality_inspection_template_name": "QC Bahan Baku Makanan",
+        "item_quality_inspection_parameter": [
+            {
+                "doctype": "Item Quality Inspection Parameter",
+                "specification": "Kebersihan dan Kondisi Kemasan",
+                "numeric": 0,
+                "value": "Baik"
+            },
+            {
+                "doctype": "Item Quality Inspection Parameter",
+                "specification": "Label dan Tanggal Kadaluarsa",
+                "numeric": 0,
+                "value": null,
+                "min_value": null,
+                "max_value": null
+            },
+            {
+                "doctype": "Item Quality Inspection Parameter",
+                "specification": "Kondisi Fisik Produk (Bahan Baku)",
+                "numeric": 0,
+                "value": "Sesuai"
+            }
+        ]
+    },
+    {
+        "doctype": "Quality Inspection Template",
+        "name": "QC Makanan Ringan Si Umang",
+        "quality_inspection_template_name": "QC Makanan Ringan Si Umang",
+        "item_quality_inspection_parameter": [
+            {
+                "doctype": "Item Quality Inspection Parameter",
+                "specification": "Kualitas Kemasan Final",
+                "numeric": 0,
+                "value": "Baik"
+            },
+            {
+                "doctype": "Item Quality Inspection Parameter",
+                "specification": "Uji Organoleptik (Barang Jadi)",
+                "numeric": 0,
+                "value": "Sesuai Standar"
+            },
+            {
+                "doctype": "Item Quality Inspection Parameter",
+                "specification": "Kesesuaian Berat Bersih",
+                "numeric": 0,
+                "value": null,
+                "min_value": null,
+                "max_value": null
+            },
+            {
+                "doctype": "Item Quality Inspection Parameter",
+                "specification": "Pencetakan Label (Batch, Exp. Date)",
+                "numeric": 0,
+                "value": null,
+                "min_value": null,
+                "max_value": null
+            }
+        ]
+    }
+]

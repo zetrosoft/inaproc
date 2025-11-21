@@ -1,19 +1,22 @@
+import base64
+import io
+
 import frappe
 import pyqrcode
-import base64, io
+
 
 def add_qr_to_context(doc, method, print_settings=None):
     url = frappe.utils.get_url_to_form(doc.doctype, doc.name)
-    
+
     try:
         qr = pyqrcode.create(url)
         buffer = io.BytesIO()
         qr.png(buffer, scale=6)
-        
+
         png_data = base64.b64encode(buffer.getvalue()).decode('utf-8')
-        
+
         doc.custom_qr_code = f'<img src="data:image/png;base64,{png_data}" />'
-    except Exception as e:
+    except Exception:
         error_message = frappe.get_traceback()
         frappe.log_error(error_message, "Inaproc QR Code Generation Failed")
         doc.custom_qr_code = ""
@@ -50,7 +53,7 @@ def get_linked_address(link_doctype, link_name):
         return None
 
     address_doc = frappe.get_doc("Address", address_name)
-    
+
     # Format alamat secara manual
     parts = [
         address_doc.address_line1,
@@ -64,7 +67,7 @@ def get_linked_address(link_doctype, link_name):
 
     address_data = address_doc.as_dict()
     address_data['formatted_address'] = formatted_address
-    
+
     return address_data
 
 
@@ -76,8 +79,8 @@ def add_all_linked_addresses_to_context(doc, method, print_settings=None):
         if doc.get(field):
             link_doctype = field.capitalize()
             link_name = doc.get(field)
-            
+
             address = get_linked_address(link_doctype, link_name)
-            
+
             if address:
                 doc.set(f"custom_{field}_address", address)

@@ -1,64 +1,95 @@
 import frappe
 
+
 def update_item_purchase_sales_flags():
     """
-    Memperbarui flag allow_purchase dan allow_sales untuk DocType Item
+    Memperbarui flag allow_purchase, allow_sales, dan pengaturan QC untuk DocType Item
     berdasarkan Item Group-nya.
-
-    Skenario:
-    - Item Group "Persediaan Barang Jadi" dan "Waste":
-        - allow_purchase = 0
-        - allow_sales = 1
-    - Item Group lainnya:
-        - allow_purchase = 1
-        - allow_sales = 0
     """
-    frappe.set_user("Administrator") # Pastikan script berjalan dengan izin Administrator
+    frappe.set_user("Administrator")
 
-    # Ambil semua Item yang merupakan item stok
-    items = frappe.get_list("Item", 
-        filters={"is_stock_item": 1}, 
-        fields=["name", "item_group", "is_purchase_item", "is_sales_item"]
+    # Ambil semua Item yang merupakan item stok beserta field QC
+    items = frappe.get_list("Item",
+        filters={"is_stock_item": 1},
+        fields=[
+            "name", "item_group", "is_purchase_item", "is_sales_item",
+            "inspection_required_before_purchase", "inspection_required_on_manufacture",
+            "inspection_required_before_delivery", "quality_inspection_template"
+        ]
     )
 
     updated_count = 0
-    frappe.msgprint("Memulai pembaruan flag is_purchase_item dan is_sales_item untuk Item.") # Initial message
+    frappe.msgprint("Memulai pembaruan flag dan pengaturan QC untuk Item.")
+
+    # Cek keberadaan template sebelum loop untuk efisiensi
+    template_bahan_baku = "QC Bahan Baku Makanan"
+    template_barang_jadi = "QC Makanan Ringan Si Umang"
+    bahan_baku_exists = frappe.db.exists("Quality Inspection Template", template_bahan_baku)
+    barang_jadi_exists = frappe.db.exists("Quality Inspection Template", template_barang_jadi)
 
     for item_data in items:
         item_name = item_data.name
         item_group = item_data.item_group
-        
-        new_is_purchase_item = None
-        new_is_sales_item = None
+
+        # Inisialisasi nilai baru
+        update_dict = {}
 
         # Tentukan nilai baru berdasarkan Item Group
-        if item_group in ["Persediaan Barang Jadi", "Waste"]:
-            new_is_purchase_item = 0
-            new_is_sales_item = 1
+        if item_group == "Persediaan Bahan Baku":
+            update_dict = {
+                "is_purchase_item": 1,
+                "is_sales_item": 0,
+                "inspection_required_before_purchase": 1,
+                "inspection_required_on_manufacture": 0,
+                "inspection_required_before_delivery": 0,
+            }
+            if bahan_baku_exists:
+                update_dict["quality_inspection_template"] = template_bahan_baku
+
+        elif item_group == "Persediaan Barang Jadi":
+            update_dict = {
+                "is_purchase_item": 0,
+                "is_sales_item": 1,
+                "inspection_required_before_purchase": 0,
+                "inspection_required_on_manufacture": 1,
+                "inspection_required_before_delivery": 1,
+            }
+            if barang_jadi_exists:
+                update_dict["quality_inspection_template"] = template_barang_jadi
+
+        elif item_group == "Waste":
+            update_dict = {"is_purchase_item": 0, "is_sales_item": 1}
+
         elif item_group == "Persediaan Barang Dalam Proses":
-            new_is_purchase_item = 0
-            new_is_sales_item = 0
-        else:
-            new_is_purchase_item = 1
-            new_is_sales_item = 0
-        
-        # Hanya perbarui jika ada perubahan nilai untuk menghindari penulisan yang tidak perlu
-        if (item_data.is_purchase_item != new_is_purchase_item or 
-            item_data.is_sales_item != new_is_sales_item):
-            
+            update_dict = {"is_purchase_item": 0, "is_sales_item": 0}
+
+        else: # Untuk grup lain seperti Bahan Baku
+            update_dict = {
+                "is_purchase_item": 1,
+                "is_sales_item": 0,
+                "inspection_required_before_purchase": 0,
+                "inspection_required_on_manufacture": 0,
+                "inspection_required_before_delivery": 0,
+            }
+
+        # Cek apakah ada perubahan nilai sebelum melakukan update
+        is_changed = False
+        for key, value in update_dict.items():
+            if item_data.get(key) != value:
+                is_changed = True
+                break
+
+        if is_changed:
             try:
-                frappe.db.set_value("Item", item_name, {
-                    "is_purchase_item": new_is_purchase_item,
-                    "is_sales_item": new_is_sales_item
-                }, update_modified=False) # update_modified=False agar tidak mengubah timestamp modifikasi
+                frappe.db.set_value("Item", item_name, update_dict, update_modified=False)
                 updated_count += 1
-                frappe.logger("inaproc").info(f"Diperbarui Item {item_name}: item_group='{item_group}', is_purchase_item={new_is_purchase_item}, is_sales_item={new_is_sales_item}")
+                frappe.logger("inaproc").info(f"Diperbarui Item {item_name}: {update_dict}")
             except Exception as e:
                 frappe.log_error(f"Gagal memperbarui Item {item_name}: {e}", "Update Item Flags")
 
-    frappe.db.commit() # Commit semua perubahan ke database
-    final_message = f"Selesai memperbarui flag is_purchase_item dan is_sales_item. Total item diperbarui: {updated_count}."
+    frappe.db.commit()
+    final_message = f"Selesai memperbarui flag dan pengaturan QC. Total item diperbarui: {updated_count}."
     if updated_count == 0:
-        final_message += " Tidak ada item yang memerlukan pembaruan atau kondisi tidak terpenuhi."
-    frappe.msgprint(final_message) # Final message
-    frappe.logger("inaproc").info(final_message) # Keep logger for server-side logs
+        final_message += " Tidak ada item yang memerlukan pembaruan."
+    frappe.msgprint(final_message)
+    frappe.logger("inaproc").info(final_message)

@@ -1,6 +1,9 @@
 import frappe
+from erpnext.buying.doctype.purchase_order.purchase_order import (
+    make_purchase_invoice as original_erpnext_make_purchase_invoice,
+)
 from frappe.utils import getdate
-from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice as original_erpnext_make_purchase_invoice
+
 
 @frappe.whitelist()
 def custom_make_purchase_invoice(source_name, target_doc=None, args=None):
@@ -43,7 +46,7 @@ def custom_make_purchase_invoice(source_name, target_doc=None, args=None):
         frappe.log_error("Payment schedule copied. Attempting to return modified PI.")
 
         return mapped_pi
-        
+
     except frappe.exceptions.PermissionError as e:
         # Menangkap error izin secara spesifik
         frappe.log_error(str(e), "Permission Error in custom_make_purchase_invoice")
@@ -53,6 +56,6 @@ def custom_make_purchase_invoice(source_name, target_doc=None, args=None):
         # Menangkap error lain
         frappe.log_error(frappe.get_traceback(), "General Error in custom_make_purchase_invoice")
         # Melemparkan error yang lebih umum jika bukan masalah izin
-        frappe.throw(f"An unexpected error occurred: {str(e)}")
-        
-    
+        frappe.throw(f"An unexpected error occurred: {e!s}")
+
+
