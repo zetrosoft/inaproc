@@ -192,7 +192,7 @@
             {% set alamat="Jalan Raya Kebon Jeruk No. 123, RT 001/RW 002, Kelurahan Kebon Jeruk, Kecamatan Kebon Jeruk, Kota Jakarta Barat, Provinsi DKI Jakarta, Kode Pos 11530, Indonesia." %}
             <td rowspan="4">
                 <span style="font-size: medium;">{{doc.supplier_name}}</span>
-                <p>{{ doc.custom_supplier_address.formatted_address or 'Alamat Pemasok tidak diatur.' }}</p>
+                <p>{{ doc.custom_supplier_address.formatted_address if doc.custom_supplier_address else 'Alamat Pemasok tidak diatur.' }}</p>
             </td>
             <td>&nbsp;</td>
             <td style="width:15%">Nomor</td>
